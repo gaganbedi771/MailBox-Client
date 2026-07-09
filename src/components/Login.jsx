@@ -1,5 +1,6 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, use } from "react";
 import { FIREBASE_API_KEY } from "../../config";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -7,6 +8,8 @@ const Login = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const [isSignUpPage, setIsSignUpPage] = useState(true);
+
+  const navigate = useNavigate();
 
   const emailRef = useRef(null);
 
@@ -36,7 +39,7 @@ const Login = () => {
               password,
               returnSecureToken: true,
             }),
-          }
+          },
         );
 
         const data = await response.json();
@@ -68,7 +71,7 @@ const Login = () => {
               password,
               returnSecureToken: true,
             }),
-          }
+          },
         );
 
         const data = await response.json();
@@ -83,7 +86,7 @@ const Login = () => {
         setPassword("");
         setConfirmPassword("");
 
-        // navigate("/home");
+        navigate("/home");
       } catch (error) {
         alert(error.message);
       }
@@ -92,15 +95,12 @@ const Login = () => {
 
   return (
     <div className="container d-flex flex-column align-items-center mt-5">
-
-
       <div className="card shadow p-4" style={{ width: "25rem" }}>
         <h3 className="text-center mb-4">
           {isSignUpPage ? "Sign Up" : "Login"}
         </h3>
 
         <form onSubmit={submitHandler}>
-
           <div className="mb-3">
             <input
               ref={emailRef}

@@ -7,7 +7,7 @@ const Header = () => {
 
       <div className="">
         <button
-          className=" btn btn-light px-2 py-1 rounded "
+          className=" btn btn-light px-2 py-1 mx-2 rounded "
           onClick={() => {
             localStorage.removeItem("token");
             navigate("/");
