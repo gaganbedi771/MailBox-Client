@@ -1,6 +1,9 @@
 import React, { useState, useRef, useEffect, use } from "react";
 import { FIREBASE_API_KEY } from "../../config";
 import { useNavigate } from "react-router-dom";
+import AuthContext from "../store/authContext";
+import { useContext } from "react";
+
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -8,6 +11,8 @@ const Login = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const [isSignUpPage, setIsSignUpPage] = useState(true);
+const authCtx = useContext(AuthContext);
+
 
   const navigate = useNavigate();
 
@@ -80,13 +85,14 @@ const Login = () => {
           throw new Error(data.error.message);
         }
 
-        localStorage.setItem("token", data.idToken);
+        authCtx.loginHandler(data.idToken, email);
+
+        navigate("/home");
 
         setEmail("");
         setPassword("");
         setConfirmPassword("");
 
-        navigate("/home");
       } catch (error) {
         alert(error.message);
       }

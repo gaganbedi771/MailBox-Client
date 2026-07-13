@@ -1,0 +1,13 @@
+.close-btn {
+  display: inline-block;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.close-btn:hover {
+  transform: scale(1.05);
+}
+
+.close-btn:active {
+  transform: scale(1.05);
+}
