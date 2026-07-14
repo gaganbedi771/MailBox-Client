@@ -11,11 +11,11 @@ const AuthContext = createContext({
 
 export const AuthContextProvider = (props) => {
   const initialToken = localStorage.getItem("token");
+  const initialEmail = localStorage.getItem("userEmail");
 
   const [token, setToken] = useState(initialToken);
 
-  const [userEmail, setUserEmail] = useState("");
-
+  const [userEmail, setUserEmail] = useState(initialEmail);
   const isLoggedIn = !!token;
 
   const loginHandler = (token, email) => {

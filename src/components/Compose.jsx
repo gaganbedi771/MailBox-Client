@@ -25,6 +25,9 @@ const Compose = () => {
             from: authCtx.userEmail,
             subject: subject,
             body: body,
+            read: false,
+            deletedBySender: false,
+            deletedByReceiver: false,
             sentAt: new Date().toISOString(),
           }),
         });
