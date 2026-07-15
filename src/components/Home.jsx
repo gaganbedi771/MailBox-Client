@@ -2,23 +2,24 @@ import React, { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { VITE_DB_URL } from "../../config";
 import AuthContext from "../store/authContext";
+import AppContext from "../store/appContext";
 
 const Home = () => {
   const navigate = useNavigate();
-  const [activeMenu, setActiveMenu] = useState("inbox");
   const [emails, setEmails] = useState([]);
   const [totalUnreadEmails, setTotalUnreadEmails] = useState(0);
   const authCtx = useContext(AuthContext);
+  const appCtx = useContext(AppContext);
 
   useEffect(() => {
     async function fetchEmails() {
       try {
         let response;
-        if (activeMenu === "inbox") {
+        if (appCtx.activeMenu === "inbox") {
           response = await fetch(
             `${VITE_DB_URL}/emails.json?orderBy="to"&equalTo="${authCtx.userEmail}"`,
           );
-        } else if (activeMenu === "sent") {
+        } else if (appCtx.activeMenu === "sent") {
           console.log("sent wala");
           response = await fetch(
             `${VITE_DB_URL}/emails.json?orderBy="from"&equalTo="${authCtx.userEmail}"`,
@@ -38,7 +39,7 @@ const Home = () => {
           }))
           .filter((email) => !email.receiverDeleted)
           .map((email) => {
-            if (!email.read && activeMenu === "inbox") {
+            if (!email.read && appCtx.activeMenu === "inbox") {
               unreadEmails++;
             }
             return {
@@ -55,13 +56,12 @@ const Home = () => {
           });
         setEmails(inboxEmails);
         setTotalUnreadEmails(unreadEmails);
-        console.log(inboxEmails);
       } catch (error) {
         console.error("Error fetching emails:", error);
       }
     }
     fetchEmails();
-  }, [activeMenu]);
+  }, [appCtx.activeMenu]);
 
   const handleDelete = async (emailId) => {
     try {
@@ -102,21 +102,24 @@ const Home = () => {
         <div className="d-flex flex-column border ">
           <button
             className={`mx-3 btn border-bottom fw-bold ${
-              activeMenu === "inbox"
+              appCtx.activeMenu === "inbox"
                 ? "btn-dark text-white fst-italic "
                 : "bg-light"
             }`}
-            onClick={() => setActiveMenu("inbox")}
+            onClick={() => {
+              console.log("inbox");
+              appCtx.changeActiveMenu("inbox");
+            }}
           >
             Inbox <span className="badge bg-danger">{totalUnreadEmails}</span>
           </button>
           <button
             className={`mx-3 btn border-bottom fw-bold ${
-              activeMenu === "sent"
+              appCtx.activeMenu === "sent"
                 ? "btn-dark text-white fst-italic "
                 : "bg-light"
             }`}
-            onClick={() => setActiveMenu("sent")}
+            onClick={() =>{ console.log("sent"); appCtx.changeActiveMenu("sent")}}
           >
             Sent
           </button>
@@ -137,13 +140,13 @@ const Home = () => {
                   onClick={() => navigate(`/email/${email.id}`)}
                 >
                   <h5>
-                    {!email.read && activeMenu === "inbox" && (
+                    {!email.read && appCtx.activeMenu === "inbox" && (
                       <span className="fw-bold">🟢</span>
                     )}{" "}
                     {email.subject}
                   </h5>
                   <p>
-                    {email.from} sent at {email.formattedDate}
+                    {appCtx.activeMenu === "inbox" ? `From: ${email.from}` : `To: ${email.to}`} sent at {email.formattedDate}
                   </p>
                 </div>
                 <div>

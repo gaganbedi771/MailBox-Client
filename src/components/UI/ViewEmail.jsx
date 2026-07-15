@@ -1,11 +1,14 @@
-import React, { useEffect } from "react";
+import React, { useEffect,useContext } from "react";
 import { useParams } from "react-router-dom";
 import { VITE_DB_URL } from "../../../config";
 import ComposeHeader from "./ComposeHeader";
+import AppContext from "../../store/appContext";
+
 
 const ViewEmail = ({}) => {
   const { id } = useParams();
   const [email, setEmail] = React.useState(null);
+  const appCtx = useContext(AppContext);
 
   useEffect(() => {
     async function fetchEmail() {
@@ -50,7 +53,7 @@ const ViewEmail = ({}) => {
           <ComposeHeader></ComposeHeader>
           <div className="container mt-3">
             <h2>Subject: {email.subject}</h2>
-            <p>From: {email.from}</p>
+            <p>{ appCtx.activeMenu === "inbox" ? `From: ${email.from}` : `To: ${email.to}` }</p>
             <p>Sent at: {email.formattedDate}</p>
             <div
               className="border-top my-3 p-5 email-body"
