@@ -15,6 +15,9 @@ const Home = () => {
     async function fetchEmails() {
       try {
         let response;
+        console.log(
+          `${VITE_DB_URL}/emails.json?orderBy="to"&equalTo="${authCtx.userEmail}"`,
+        );
         if (appCtx.activeMenu === "inbox") {
           response = await fetch(
             `${VITE_DB_URL}/emails.json?orderBy="to"&equalTo="${authCtx.userEmail}"`,
@@ -54,6 +57,10 @@ const Home = () => {
               }),
             };
           });
+        console.log({
+          activeMenu: appCtx.activeMenu,
+          userEmail: authCtx.userEmail,
+        });
         setEmails(inboxEmails);
         setTotalUnreadEmails(unreadEmails);
       } catch (error) {
@@ -61,7 +68,12 @@ const Home = () => {
       }
     }
     fetchEmails();
-  }, [appCtx.activeMenu]);
+    const timer = setInterval(() => {
+      fetchEmails();
+    }, 5000);
+
+    return () => clearInterval(timer);
+  }, [appCtx.activeMenu, authCtx.userEmail]);
 
   const handleDelete = async (emailId) => {
     try {
@@ -108,6 +120,7 @@ const Home = () => {
             }`}
             onClick={() => {
               console.log("inbox");
+              setEmails([]);
               appCtx.changeActiveMenu("inbox");
             }}
           >
@@ -119,7 +132,11 @@ const Home = () => {
                 ? "btn-dark text-white fst-italic "
                 : "bg-light"
             }`}
-            onClick={() =>{ console.log("sent"); appCtx.changeActiveMenu("sent")}}
+            onClick={() => {
+              console.log("sent");
+              setEmails([]);
+              appCtx.changeActiveMenu("sent");
+            }}
           >
             Sent
           </button>
@@ -146,7 +163,10 @@ const Home = () => {
                     {email.subject}
                   </h5>
                   <p>
-                    {appCtx.activeMenu === "inbox" ? `From: ${email.from}` : `To: ${email.to}`} sent at {email.formattedDate}
+                    {appCtx.activeMenu === "inbox"
+                      ? `From: ${email.from}`
+                      : `To: ${email.to}`}{" "}
+                    sent at {email.formattedDate}
                   </p>
                 </div>
                 <div>
