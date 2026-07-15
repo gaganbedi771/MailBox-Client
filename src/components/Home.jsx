@@ -7,6 +7,7 @@ const Home = () => {
   const navigate = useNavigate();
   const [activeMenu, setActiveMenu] = useState("inbox");
   const [emails, setEmails] = useState([]);
+  const [totalUnreadEmails, setTotalUnreadEmails] = useState(0);
   const authCtx = useContext(AuthContext);
 
   useEffect(() => {
@@ -24,6 +25,7 @@ const Home = () => {
           );
         }
 
+        let unreadEmails = 0;
         const data = await response.json();
         if (!data) {
           setEmails([]);
@@ -35,18 +37,24 @@ const Home = () => {
             ...email,
           }))
           .filter((email) => !email.receiverDeleted)
-          .map((email) => ({
-            ...email,
-            formattedDate: new Date(email.sentAt).toLocaleString("en-IN", {
-              weekday: "long",
-              day: "numeric",
-              month: "long",
-              hour: "numeric",
-              minute: "2-digit",
-              hour12: true,
-            }),
-          }));
+          .map((email) => {
+            if (!email.read && activeMenu === "inbox") {
+              unreadEmails++;
+            }
+            return {
+              ...email,
+              formattedDate: new Date(email.sentAt).toLocaleString("en-IN", {
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+                hour: "numeric",
+                minute: "2-digit",
+                hour12: true,
+              }),
+            };
+          });
         setEmails(inboxEmails);
+        setTotalUnreadEmails(unreadEmails);
         console.log(inboxEmails);
       } catch (error) {
         console.error("Error fetching emails:", error);
@@ -54,6 +62,21 @@ const Home = () => {
     }
     fetchEmails();
   }, [activeMenu]);
+
+  const handleDelete = async (emailId) => {
+    try {
+      const emailToDelete = emails.find((email) => email.id === emailId);
+      if (!emailToDelete) return;
+
+      await fetch(`${VITE_DB_URL}/emails/${emailId}.json`, {
+        method: "DELETE",
+      });
+
+      setEmails(emails.filter((email) => email.id !== emailId));
+    } catch (error) {
+      console.error("Error deleting email:", error);
+    }
+  };
 
   return (
     <div
@@ -85,7 +108,7 @@ const Home = () => {
             }`}
             onClick={() => setActiveMenu("inbox")}
           >
-            Inbox
+            Inbox <span className="badge bg-danger">{totalUnreadEmails}</span>
           </button>
           <button
             className={`mx-3 btn border-bottom fw-bold ${
@@ -105,11 +128,32 @@ const Home = () => {
             <p className="text-center mt-5">No emails to display</p>
           ) : (
             emails.map((email) => (
-              <div key={email.id} className="border-bottom p-3 bg-secondary text-white">
-                <h5>{email.subject}</h5>
-                <p>
-                  {email.from} sent at {email.formattedDate}
-                </p>
+              <div
+                key={email.id}
+                className="border-bottom p-3 bg-secondary text-white d-flex justify-content-between border border-dark rounded-3 m-2"
+              >
+                <div
+                  className="cursor-pointer"
+                  onClick={() => navigate(`/email/${email.id}`)}
+                >
+                  <h5>
+                    {!email.read && activeMenu === "inbox" && (
+                      <span className="fw-bold">🟢</span>
+                    )}{" "}
+                    {email.subject}
+                  </h5>
+                  <p>
+                    {email.from} sent at {email.formattedDate}
+                  </p>
+                </div>
+                <div>
+                  <button
+                    className="btn btn-danger"
+                    onClick={() => handleDelete(email.id)}
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
             ))
           )}

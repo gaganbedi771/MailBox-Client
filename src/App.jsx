@@ -6,6 +6,7 @@ import Home from "./components/Home";
 import Compose from "./components/Compose";
 import AuthContext from "./store/authContext";
 import { useContext } from "react";
+import ViewEmail from "./components/UI/ViewEmail";
 
 
 
@@ -19,6 +20,7 @@ const App = () => {
         <Route path="/" element={authCtx.isLoggedIn ? <Home></Home> :  <Login></Login>} />
         <Route path="/home" element={authCtx.isLoggedIn ? <Home></Home> : <Login></Login>} />
         <Route path="/compose" element={authCtx.isLoggedIn ? <Compose></Compose> : <Login></Login>} />
+        <Route path="/email/:id" element={authCtx.isLoggedIn ? <ViewEmail></ViewEmail> : <Login></Login>} />
       </Routes>
     </>
   );
