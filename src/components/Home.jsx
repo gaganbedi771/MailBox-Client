@@ -3,77 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { VITE_DB_URL } from "../../config";
 import AuthContext from "../store/authContext";
 import AppContext from "../store/appContext";
+import useFetchEmails from "@/hooks/useFetchEmails";
 
 const Home = () => {
   const navigate = useNavigate();
-  const [emails, setEmails] = useState([]);
-  const [totalUnreadEmails, setTotalUnreadEmails] = useState(0);
-  const authCtx = useContext(AuthContext);
+  useFetchEmails();
   const appCtx = useContext(AppContext);
-
-  useEffect(() => {
-    async function fetchEmails() {
-      try {
-        let response;
-        console.log(
-          `${VITE_DB_URL}/emails.json?orderBy="to"&equalTo="${authCtx.userEmail}"`,
-        );
-        if (appCtx.activeMenu === "inbox") {
-          response = await fetch(
-            `${VITE_DB_URL}/emails.json?orderBy="to"&equalTo="${authCtx.userEmail}"`,
-          );
-        } else if (appCtx.activeMenu === "sent") {
-          console.log("sent wala");
-          response = await fetch(
-            `${VITE_DB_URL}/emails.json?orderBy="from"&equalTo="${authCtx.userEmail}"`,
-          );
-        }
-
-        let unreadEmails = 0;
-        const data = await response.json();
-        if (!data) {
-          setEmails([]);
-          return;
-        }
-        const inboxEmails = Object.entries(data)
-          .map(([id, email]) => ({
-            id,
-            ...email,
-          }))
-          .filter((email) => !email.receiverDeleted)
-          .map((email) => {
-            if (!email.read && appCtx.activeMenu === "inbox") {
-              unreadEmails++;
-            }
-            return {
-              ...email,
-              formattedDate: new Date(email.sentAt).toLocaleString("en-IN", {
-                weekday: "long",
-                day: "numeric",
-                month: "long",
-                hour: "numeric",
-                minute: "2-digit",
-                hour12: true,
-              }),
-            };
-          });
-        console.log({
-          activeMenu: appCtx.activeMenu,
-          userEmail: authCtx.userEmail,
-        });
-        setEmails(inboxEmails);
-        setTotalUnreadEmails(unreadEmails);
-      } catch (error) {
-        console.error("Error fetching emails:", error);
-      }
-    }
-    fetchEmails();
-    const timer = setInterval(() => {
-      fetchEmails();
-    }, 5000);
-
-    return () => clearInterval(timer);
-  }, [appCtx.activeMenu, authCtx.userEmail]);
+  const { activeMenu, changeActiveMenu, emails, setEmails, totalUnreadEmails } =
+    appCtx;
 
   const handleDelete = async (emailId) => {
     try {
@@ -114,14 +51,14 @@ const Home = () => {
         <div className="d-flex flex-column border ">
           <button
             className={`mx-3 btn border-bottom fw-bold ${
-              appCtx.activeMenu === "inbox"
+              activeMenu === "inbox"
                 ? "btn-dark text-white fst-italic "
                 : "bg-light"
             }`}
             onClick={() => {
               console.log("inbox");
               setEmails([]);
-              appCtx.changeActiveMenu("inbox");
+              changeActiveMenu("inbox");
             }}
           >
             Inbox <span className="badge bg-danger">{totalUnreadEmails}</span>
@@ -135,7 +72,7 @@ const Home = () => {
             onClick={() => {
               console.log("sent");
               setEmails([]);
-              appCtx.changeActiveMenu("sent");
+              changeActiveMenu("sent");
             }}
           >
             Sent
@@ -157,13 +94,13 @@ const Home = () => {
                   onClick={() => navigate(`/email/${email.id}`)}
                 >
                   <h5>
-                    {!email.read && appCtx.activeMenu === "inbox" && (
+                    {!email.read && activeMenu === "inbox" && (
                       <span className="fw-bold">🟢</span>
                     )}{" "}
                     {email.subject}
                   </h5>
                   <p>
-                    {appCtx.activeMenu === "inbox"
+                    {activeMenu === "inbox"
                       ? `From: ${email.from}`
                       : `To: ${email.to}`}{" "}
                     sent at {email.formattedDate}
